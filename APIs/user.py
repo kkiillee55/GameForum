@@ -149,10 +149,8 @@ def send_random_password_email(user,random_password):
 
 @user.route('/address_auto_complete',methods=['GET'])
 def address_auto_complete():
-    #print(request.args)
-    #print(request.headers)
-    auth_id = "smartstrees id"
-    auth_token = "smartstrreets toekn"
+    auth_id = os.environ.get('smartystreets_id')
+    auth_token = os.environ.get('smartystreets_token')
     credentials = StaticCredentials(auth_id, auth_token)
     client = ClientBuilder(credentials).build_us_autocomplete_api_client()
     if not request.args:
@@ -227,8 +225,6 @@ def register():
 
 
 
-
-
 @user.route('/activate_account/<string:token>')
 def activate_account(token):
     res={}
@@ -241,7 +237,7 @@ def activate_account(token):
     ]
     try:
         data=User.verify_token(token)
-        print(data)
+        #print(data)
         user = User.query.get(data['user_id'])
 
         user.status = 'ACTIVATED'
@@ -265,6 +261,7 @@ def activate_account(token):
             }
         ]
         return jsonify(res), 400
+
 
 
 @user.route('/request_activate_account',methods=['GET','POST'])
@@ -584,6 +581,15 @@ def user_profile():
         first_name=request.json.get('first_name')
         last_name=request.json.get('last_name')
         address=request.json.get('address')
+        if not first_name:
+            res['msg']='missing first name'
+            return jsonify(res),400
+        if not last_name:
+            res['msg']='missing last name'
+            return jsonify(res),400
+        if not address:
+            res['msg']='missing address'
+            return jsonify(res),400
         user.first_name=first_name
         user.last_name=last_name
         user.address=address
@@ -731,7 +737,7 @@ def reset_password(token):
                     'type': ['GET', 'POST']
                 }
             ]
-        }),400
+        }),440
 
 
 

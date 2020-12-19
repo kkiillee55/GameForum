@@ -1,0 +1,449 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "this is description field",
+    "version": "1.0.0",
+    "title": "this is title field",
+    "contact": {
+      "email": "dummy@email.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licences/MIT"
+    }
+  },
+  "tags": [
+    {
+      "name": "index api",
+      "description": "api for index"
+    },
+    {
+      "name": "user api",
+      "description": "sample api for user"
+    },
+    {
+      "name": "game api",
+      "description": "some api for game"
+    }
+  ],
+
+  "paths": {
+    "/api/index": {
+      "get": {
+        "tags": ["index api"],
+        "summary": "welcome page of api",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/user": {
+      "get": {
+        "tags": ["user api"],
+        "summary": "this is the home page for  user api",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/user/address_auto_complete": {
+      "get": {
+        "tags": ["user api"],
+        "summary": "get auto generated address",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "address",
+            "description": "provide address for auto complete",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "did not provide address"
+          }
+        }
+      }
+    },
+    "/api/user/register": {
+      "get": {
+        "tags": ["user api"],
+        "summary": "no idea why i'll implement GET for registration",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": ["user api"],
+        "summary": "provide some user info and register as a new user",
+        "parameters": [
+          {
+            "in": "formData",
+            "name": "first_name",
+            "description": "you first name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "formData",
+            "name": "last_name",
+            "description": "your last name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "formData",
+            "name": "email",
+            "description": "your email",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "formData",
+            "name": "password",
+            "description": "your password",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "formData",
+            "name": "address",
+            "description": "you living address",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "if some fields are not provides"
+          }
+        }
+      }
+    },
+    "/api/user/activate_account/{token}": {
+      "get": {
+        "tags": ["user api"],
+        "summary": "click this activation link and your account will be activated",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "description": "a timed JWT token",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Token expired or invalid"
+          }
+        }
+      }
+    },
+    "/api/user/request_activate_account": {
+      "get": {
+        "tags": ["user api"],
+        "summary": "I dont know why I have GET for it",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": ["user api"],
+        "summary": "send an activation link to you email",
+        "parameters": [
+          {
+            "in": "formData",
+            "name": "email",
+            "description": "your email",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "maybe you are currently logged in, or you email has been activated"
+          }
+        }
+      }
+    },
+    "/api/user/login":{
+      "get": {
+        "summary": "you cannot login with GET",
+        "tags": ["user api"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": ["user api"],
+        "summary": "provide data and we will try to log you in",
+        "parameters": [
+          {
+            "in": "formData",
+            "name": "email",
+            "description": "your email",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "password",
+            "description": "your little secret",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400":{
+            "description": "no email/ no password/ not activated/ "
+          },
+          "401":{
+            "description": "wrong password"
+          }
+        }
+      }
+    },
+    "/api/user/refresh_token": {
+      "post": {
+        "tags": ["user api"],
+        "summary": "refresh current token",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "use this format-> refresh_token xxx.xxx.xxx",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200":{
+            "description": "A new token generated, save it!!!"
+          },
+          "400": {
+            "description": "refresh_token not found"
+          },
+          "440": {
+            "description": "refresh_token also expired"
+          }
+        }
+      }
+
+    },
+    "/api/user/google_login": {
+      "post": {
+        "tags": ["user api"],
+        "summary": "Another way for google login",
+        "description": "I put google account authentication and redirects in React. So if use successfully logged in using google, the frontend is expected to send email and other info back to this API endpoint, then it will check if this email appears in our database",
+        "parameters": [
+          {
+            "in": "formData",
+            "name": "email",
+            "description": "google email",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "first_name",
+            "description": "first name from google account",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "last_name",
+            "description": "last name from google account",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "missing email/ first_name/ last_name"
+          }
+        }
+      }
+    },
+    "/api/user/logout": {
+      "get": {
+        "tags": ["user api"],
+        "summary": "I realized there's no need to have logout, should let frontend handle this"
+      }
+    },
+    "/api/user/profile": {
+      "get": {
+        "tags": ["user api"],
+        "summary": "get profile for current user",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "the format -> token xxx.xx.xxx",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "token required/ account is not activated"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["user api"],
+        "summary": "update user info",
+        "parameters": [
+          {
+            "in": "formData",
+            "name": "first_name",
+            "description": "your new first name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "last_name",
+            "description": "your new last name",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "address",
+            "description": "your new address",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "no first_name/ last_name/ address/ token required/ account is not activated"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+    },
+    "/api/user/view_profile/{user_id}": {
+      "get": {
+        "tags": ["user api"],
+        "summary": "see others profile",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "description": "user_id",
+            "type": "number",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "No such user"
+          }
+        }
+      }
+    },
+    "/api/user/forgot_password": {
+      "post": {
+        "tags": ["user api"],
+        "summary": "request to send a reset password email",
+        "parameters": [
+          {
+            "in": "formData",
+            "name": "email",
+            "description": "your email",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "email not found"
+          },
+          "400": {
+            "description": "email not provided"
+          }
+        }
+      }
+    },
+    "/api/user/reset_password/{token}": {
+      "post": {
+        "tags": ["user api"],
+        "summary": "rest your password",
+        "parameters": [
+          {
+            "in": "formData",
+            "name": "password",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "confirm_password",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "missing password/confirm_password/ two passwords do not match"
+          },
+          "440":{
+            "description": "link expired"
+          }
+        }
+      }
+    }
+  }
+}
