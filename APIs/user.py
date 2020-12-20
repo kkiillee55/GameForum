@@ -554,6 +554,8 @@ def logout():
 @token_required
 def user_profile():
     # token=session.get('token')
+    if not request.headers.get('Authorization'):
+        return jsonify({'error':'token not provided'}),400
     token_type,token=request.headers.get('Authorization').split(' ')
     data=jwt.decode(token,application.config['SECRET_KEY'])
     user=User.query.get(data['user_id'])

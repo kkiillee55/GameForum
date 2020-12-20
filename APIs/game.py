@@ -539,7 +539,7 @@ def update_comment(game_title,post_id,comment_id):
         return jsonify(res),200
     except:
         res['msg']='version_id dose not match'
-        return jsonify(res),400
+        return jsonify(res),417
 
 def add_response(user,game_title,post_id,comment_parent_uuid,comment_text):
 
@@ -602,7 +602,7 @@ def create_response(game_title,post_id,comment_id):
         ]
     }),200
 
-@game.route('/<string:game_title>/<int:post_id>/<string:comment_parent_id>/<string:comment_id>/update_response',methods=['PATCH'])
+@game.route('/<string:game_title>/<int:post_id>/<string:comment_id>/<string:comment_parent_id>/update_response',methods=['PATCH'])
 @token_required
 def update_response(game_title,post_id,comment_parent_id,comment_id):
     user=get_current_user()
@@ -644,7 +644,7 @@ def update_response(game_title,post_id,comment_parent_id,comment_id):
     res['msg'] ='success'
     return jsonify(res),200
 
-@game.route('/<string:game_title>/<int:post_id>/<string:comment_parent_id>/<string:comment_id>/delete_response',methods=['DELETE'])
+@game.route('/<string:game_title>/<int:post_id>/<string:comment_id>/<string:comment_parent_id>/delete_response',methods=['DELETE'])
 @token_required
 def delete_response(game_title,post_id,comment_parent_id,comment_id):
     user=get_current_user()

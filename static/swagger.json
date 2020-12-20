@@ -26,7 +26,7 @@
       "description": "some api for game"
     }
   ],
-
+  "host": "game-env.eba-9fppu8jx.us-east-2.elasticbeanstalk.com",
   "paths": {
     "/api/index": {
       "get": {
@@ -295,12 +295,6 @@
         }
       }
     },
-    "/api/user/logout": {
-      "get": {
-        "tags": ["user api"],
-        "summary": "I realized there's no need to have logout, should let frontend handle this"
-      }
-    },
     "/api/user/profile": {
       "get": {
         "tags": ["user api"],
@@ -441,6 +435,574 @@
           },
           "440":{
             "description": "link expired"
+          }
+        }
+      }
+    },
+    "/api/game": {
+      "get": {
+        "tags": ["game api"],
+        "summary": "this is the homepage for game api",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}": {
+      "get": {
+        "tags": ["game api"],
+        "summary": "show all posts in this game",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_title",
+            "description": "title of a specific game",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "game_title not found"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}/{post_id}": {
+      "get": {
+        "tags": ["game api"],
+        "summary": "get info of a post in a game",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "game_title",
+            "description": "game title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "post_id",
+            "description": "id of this post",
+            "type": "number",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "game or post not found"
+          },
+          "500": {
+            "description": "maybe you didn't create the GSI in dynamodb"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}/{post_id}/update": {
+      "patch": {
+        "tags": ["game api"],
+        "summary": "update this post if you are the author or admin",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xxx.xxx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "game_title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "post_id",
+            "type": "number",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "title",
+            "type": "string",
+            "required": false
+          },
+          {
+            "in": "formData",
+            "name": "content",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "you are not logged in or have no privilege"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}/{post_id}/delete": {
+      "delete": {
+        "tags": ["game api"],
+        "summary": "delete this post and all comments if you are the author or admin",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xxx.xxx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "game_title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "post_id",
+            "type": "number",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "you are not logged in or have no privilege"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+
+    },
+    "/api/game/{game_title}/new_post": {
+      "post": {
+        "tags": ["game api"],
+        "summary": "create a new post in a game",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xx.xx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "content",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "game not found"
+          },
+          "400": {
+            "description": "title or content not provided"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+
+    },
+    "/api/game/{game_title}/{post_id}/create_comment": {
+      "post": {
+        "tags": ["game api"],
+        "summary": "create a comment in a post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xx.xx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "game_title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "post_id",
+            "type": "number",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "comment_text",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400":{
+            "description": "comment_text is empty"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}/{post_id}/{comment_id}/delete_comment": {
+      "delete": {
+        "tags": ["game api"],
+        "summary": "delete this comment",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xx.xx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "game_title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "post_id",
+            "type": "number",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "comment_id",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "you don't have the privilege"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}/{post_id}/{comment_id}/update_comment": {
+      "patch": {
+        "tags": ["game api"],
+        "summary": "update current comment",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xx.xx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "game_title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "post_id",
+            "type": "number",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "comment_id",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "comment_text",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "version_id",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400":{
+            "description": "missing comment_text or version_id"
+          },
+          "417": {
+            "description": "version_id does not match"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}/{post_id}/{comment_id}/create_response": {
+      "post": {
+        "tags": ["game api"],
+        "summary": "create a new respose of a comment",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xx.xx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "game_title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "post_id",
+            "type": "number",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "comment_id",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "comment_text",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200":{
+            "description": "OK"
+          },
+          "400": {
+            "description": "empty comment_text"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}/{post_id}/{comment_id}/{comment_parent_id}/update_response": {
+      "patch": {
+        "tags": ["game api"],
+        "summary": "update you response",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xx.xx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "game_title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "post_id",
+            "type": "number",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "comment_parent_id",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "comment_id",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "name": "comment_text",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "missing comment_test or no privilege"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}/{post_id}/{comment_id}/{comment_parent_id}/delete_response": {
+      "delete": {
+        "tags": ["game api"],
+        "summary": "delete your response",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xx.xx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "game_title",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "post_id",
+            "type": "number",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "comment_parent_id",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "comment_id",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "missing comment_test or no privilege"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}/follow": {
+      "post": {
+        "tags": ["game api"],
+        "summary": "follow this game",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xx.xx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "game_title",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "game not found"
+          },
+          "440": {
+            "description": "token expired"
+          }
+        }
+      }
+    },
+    "/api/game/{game_title}/unfollow": {
+      "post": {
+        "tags": ["game api"],
+        "summary": "unfollow this game",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "description": "token xxx.xx.xx",
+            "type": "string",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "game_title",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "game not found"
+          },
+          "400": {
+            "description": "you did not follow this game"
+          },
+          "440": {
+            "description": "token expired"
           }
         }
       }
