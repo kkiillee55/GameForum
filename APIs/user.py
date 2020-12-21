@@ -329,9 +329,11 @@ def login():
         res['msg']='you already logged in'
         return jsonify(res),200
     #res['msg']='login failed'
-    if request.method=='GET' or not request.json:
+    if request.method=='GET':
         #session['msg']='dummy message'
         return jsonify(res),200
+    elif not request.json:
+        return jsonify(res), 400
     else:
         email=request.json.get('email')
         password=request.json.get('password')

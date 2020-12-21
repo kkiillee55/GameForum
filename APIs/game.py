@@ -47,26 +47,33 @@ def home():
         res['links'].append(temp)
     return jsonify(res),200
 
+def find_prev_page(total,offset,limit,prefix):
+    if offset-limit>=0:
+        return prefix+f'offset={offset-limit}&limit={limit}'
+    else:
+        return None
+
+def find_next_page(total,offset,limit,prefix):
+    if offset+limit>=total:
+        return None
+    else:
+        return prefix+f'offset={offset+limit}&limit={limit}'
+
 @game.route('/<string:game_title>')
 def game_posts(game_title):
     game=Game.query.filter_by(title=game_title).first()
     user=get_current_user()
     res={}
-    res['links']=[
-        # {
-        #     'rel':'game home page',
-        #     'href':f'{url_for("game.home")}'
-        # },
-        {
-            'rel': 'post/new_post',
-            'href': f'{url_for("game.new_post", game_title=game_title)}'
-        }
-        # {
-        #     'rel':'unfollow this game' if (user and game in user.following_games) else 'follow this game',
-        #     'href':f'{url_for("game.unfollow",game_title=game_title)}' if (user and game in user.following_games) else f'{url_for("game.follow",game_title=game_title)}'
-        # },
-    ]
+
+
+    res['links']=[]
     if user:
+        res['links']=[
+            {
+                'rel': 'post/new_post',
+                'href': f'{url_for("game.new_post", game_title=game_title)}'
+            }
+        ]
         if game in user.following_games:
             res['links']+=[
                 {
@@ -112,6 +119,31 @@ def game_posts(game_title):
             'date_posted':post.date_posted,
             'href':f'{url_for("game.post_page",game_title=game_title,post_id=post.id)}'
         } for post in game.posts]
+        res['posts'].sort(key=lambda post:post['date_posted'],reverse=True)
+        if not request.args.get('offset'):
+            offset = 0
+        else:
+            offset=int(request.args.get('offset'))
+        limit=5
+        #print(offset,limit)
+        res['posts']=res['posts'][offset:offset+limit]
+        total = len(game.posts)
+        prev_page=find_prev_page(total,offset,limit,f'/api/game/{game_title}?')
+        next_page=find_next_page(total,offset,limit,f'/api/game/{game_title}?')
+        res['links'].append(
+            {
+                'rel':'prev',
+                'href':prev_page
+            }
+        )
+        res['links'].append(
+            {
+                'rel': 'next',
+                'href': next_page
+            }
+        )
+
+
         return jsonify(res),200
 
 @game.route('/<string:game_title>/<int:post_id>')
@@ -150,6 +182,7 @@ def post_page(game_title,post_id):
         }
     )['Items']
     user=get_current_user()
+    res['post_author_login']=(user==post.author)
     display_comments=[]
     for comment in comments:
         template={}
@@ -256,6 +289,7 @@ def update_post(game_title,post_id):
 def delete_post(game_title,post_id):
     user = get_current_user()
     post = Post.query.get(post_id)
+
     res = {}
     res['links'] = [
         {
@@ -281,6 +315,7 @@ def delete_post(game_title,post_id):
         res['game']=game_title
         return jsonify(res),200
     elif request.method == 'DELETE':
+
         db.session.delete(post)
         db.session.commit()
 
@@ -294,13 +329,18 @@ def delete_post(game_title,post_id):
                 ':pid': str(post_id)
             }
         )['Items']
-        with table.batch_writer() as batch:
-            for comment in comments:
-                batch.delete_item(Key={
-                    'comment_id':comment['comment_id'],
-                    'email':comment['email']
+
+        for comment in comments:
+            comment_id=comment['comment_id']
+            try:
+                table.delete_item(Key={
+                    'comment_id':comment_id
                 })
-                requests.delete(url+comment['comment_id'],auth=awsauth,headers=headers)
+                requests.delete(url + comment['comment_id'], auth=awsauth, headers=headers)
+            except:
+                print('some error')
+
+        print('im here')
         res['msg']='post deleted'
         return jsonify(res),200
 
@@ -456,8 +496,7 @@ def delete_comment(game_title,post_id,comment_id):
     db.session.commit()
     table.delete_item(
         Key={
-            'comment_id':comment_id,
-            'email':user.email
+            'comment_id':comment_id
         }
     )
     requests.delete(url+comment_id,auth=awsauth,headers=headers)
@@ -496,7 +535,6 @@ def update_comment(game_title,post_id,comment_id):
             comment=table.get_item(
                 Key={
                     'comment_id':comment_id,
-                    'email':user.email
                 }
             )['Item']
             res['version_id']=comment['version_id']
@@ -515,7 +553,6 @@ def update_comment(game_title,post_id,comment_id):
         table.update_item(
             Key={
                 'comment_id':comment_id,
-                'email':user.email
             },
             UpdateExpression='SET comment_text=:val, version_id=:vid',
             ConditionExpression='version_id=:version_id',
@@ -528,8 +565,7 @@ def update_comment(game_title,post_id,comment_id):
 
         comment = table.get_item(
             Key={
-                'comment_id': comment_id,
-                'email': user.email
+                'comment_id': comment_id
             }
         )['Item']
         comment.pop('responses')
@@ -557,7 +593,6 @@ def add_response(user,game_title,post_id,comment_parent_uuid,comment_text):
     table.update_item(
         Key={
             'comment_id':comment_parent_uuid,
-            'email':post.author.email
         },
         UpdateExpression='SET responses = list_append(responses,:val)',
         ExpressionAttributeValues={
@@ -634,7 +669,6 @@ def update_response(game_title,post_id,comment_parent_id,comment_id):
     table.update_item(
         Key={
             'comment_id':comment_parent_id,
-            'email':comment_parent.author.email
         },
         UpdateExpression='SET responses=:val',
         ExpressionAttributeValues={
@@ -673,7 +707,6 @@ def delete_response(game_title,post_id,comment_parent_id,comment_id):
     table.update_item(
         Key={
             'comment_id':comment_parent_id,
-            'email':comment_parent.author.email
         },
         UpdateExpression='SET responses=:val',
         ExpressionAttributeValues={

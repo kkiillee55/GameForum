@@ -22,7 +22,7 @@ since frontend must provide token for us
 def token_required(func):
     @wraps(func)
     def wrapper(*args,**kwargs):
-        #print(request.headers.get('Authorization'))
+
         x=request.headers.get('Authorization').split(' ')
         if len(x)!=2:
             return jsonify({
@@ -63,14 +63,14 @@ def token_required(func):
         try:
             data=jwt.decode(token,application.config['SECRET_KEY'])
             user=User.query.get(data['user_id'])
-            #print(data)
+
             if user.status=='PENDING':
                 return jsonify({
                     'msg':'please activate your account first, check the activation email'
                 }),400
             return func(*args,**kwargs)
         except:
-            #session.pop('token')
+            #print("you are in herer")
             return jsonify({
                 'msg': 'token expired or invalid, please re-login',
                 'links':[
